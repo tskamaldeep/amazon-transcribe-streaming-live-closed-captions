@@ -63,6 +63,6 @@ on_die ()
 }
 sleep 5
 trap 'on_die' TERM
-ffmpeg -loglevel quiet -re -sn -i $inputb -c:v copy -c:a copy -f flv - | flv+srt - transcript_fifo_fr - | ffmpeg -loglevel quiet -y -i - -c:v copy -c:a copy -metadata:s:s:0 language=eng -f $format $output &
+ffmpeg -loglevel quiet -re -sn -i $inputb -c:v copy -c:a copy -f flv - | flv+srt - transcript_fifo - | ffmpeg -loglevel quiet -y -i - -c:v copy -c:a copy -metadata:s:s:0 language=eng -f $format $output &
 ffmpeg -loglevel quiet -re -i $input -vn -ac 1 -c:a pcm_s16le -ar 16000 -f wav - | node index.js --fifo=transcript_fifo --fifo-tr=transcript_fifo_fr --stdin=true &
 wait

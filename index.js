@@ -574,9 +574,9 @@ const startTranscribe = async function startTranscribe() {
           generateSRTFifo(transcript);
         }
         /// TRANSLATE
-        if (isFifoTr) {
-          await generateTranslateFifo(transcript);
-        }
+        // if (isFifoTr) {
+        //   await generateTranslateFifo(transcript);
+        // }
       }
     }
   } catch (error) {
