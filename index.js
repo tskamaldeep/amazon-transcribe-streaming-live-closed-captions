@@ -25,6 +25,9 @@
 /* require for packages */
 const chokidar = require('chokidar');
 const { TranscribeStreamingClient, StartStreamTranscriptionCommand } = require('@aws-sdk/client-transcribe-streaming');
+/// TRANSLATE
+const { TranslateClient, CreateParallelDataCommand } = require("@aws-sdk/client-translate");
+
 const stream = require('stream');
 const fs = require('fs');
 const path = require('path');
@@ -40,10 +43,17 @@ const argv = require('./argv');
 /* Constants */
 const REGION = 'us-west-2';
 const isFifo = argv('fifo');
+/// TRANSLATE
+const isFifoTr = argv('fifo-tr')
+
 const customVocab = argv('cv');
 const clm = argv('clm');
 const relativeTime = (!isFifo); // if true, the timestamps will be zeroed every file
 const fifoFileName = (isFifo && argv('fifo').length > 0 ? isFifo : 'fifo_srt');
+/// TRANSLATE
+/// French be default lang.
+const fifoTrFileName = (isFifoTr && argv('fifo-tr').length > 0 ? isFifoTr : 'fifo_srt_fr');
+
 const mediaStoreEndpoint = (argv('mediaStoreEndpoint') ? argv('mediaStoreEndpoint') : '');
 const wavSubDir = 'wav';
 const wavDirPath = path.join(__dirname, wavSubDir);
@@ -187,10 +197,17 @@ const mergeMP4WithSRT = async function mergedMP4WithSRT(filePath) {
 };
 
 /// this will generate an SRT string for a particular transcript object
+/// TRANSLATE
+/// Also handle the translate file stream
 let fifoWs;
+let fifoWsTr;
 if (isFifo) {
   fifoWs = fs.openSync(fifoFileName, 'w');
   console.log(`opening write stream to ${fifoFileName}`);
+}
+if (isFifoTr) {
+  fifoWsTr = fs.openSync(fifoTrFileName, 'w');
+  console.log(`opening write stream to ${fifoTrFileName}`);
 }
 
 const generateSRTFifo = (transcript) => {
@@ -220,6 +237,48 @@ const generateSRTFifo = (transcript) => {
   console.log(srtOutput);
   fs.writeSync(fifoWs, utf8.encode(srtOutput));
 };
+
+/// TRANSLATE
+/// Function to write to the translate pipe
+const generateTranslateFifo = async function generateTranslateFifo(transcript) {
+  // console.log('generating translated text');
+
+  let trOutput = '';
+  const captionStart = 0;
+  let captionEnd = transcript.EndTime - transcript.StartTime;
+
+  if (transcript.lastDuration) {
+    captionEnd -= transcript.lastDuration;
+  }
+
+  // /* output the caption number */
+  if (isFifoTr) trOutput += '0\n';
+  else trOutput += `${totalCaptions.toString()}\n`;
+
+  trOutput += `${srt.getTimestamp(captionStart)} --> ${srt.getTimestamp(captionEnd)}\n`;
+  /// TRANSLATE
+  // Try translating the individual lines.
+  const trClient = new TranslateClient({ region: REGION });
+  var trParams = {
+    SourceLanguageCode: 'auto',
+    TargetLanguageCode: 'fr',
+    Text: transcript.Transcript.Line1
+  };
+  var trCmd = new CreateParallelDataCommand(trParams);
+  var trResponse = await trClient.send(trCmd);
+  var trText = trResponse; //.TranslatedText;
+
+
+  trOutput += `${trText}\n`;
+  // srtOutput += `${transcript.Transcript.Line2.padEnd(31, ' ')}\n`;
+  // srtOutput += `${transcript.Transcript.Line3.padEnd(31, ' ')}\n`;
+  // srtOutput += `${transcript.Transcript.Line4.padEnd(31, ' ')}\n`;
+  // srtOutput += '\0';
+
+  console.log(trOutput);
+  fs.writeSync(fifoWsTr, utf8.encode(trOutput));
+};
+
 
 const generateSRTForSegment = async (filePath, segmentNumber) => {
   await timerPromises.setTimeout(forwardPressure * 1000);
@@ -513,6 +572,10 @@ const startTranscribe = async function startTranscribe() {
 
         if (isFifo) {
           generateSRTFifo(transcript);
+        }
+        /// TRANSLATE
+        if (isFifoTr) {
+          await generateTranslateFifo(transcript);
         }
       }
     }
