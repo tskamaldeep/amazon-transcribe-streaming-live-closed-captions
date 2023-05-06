@@ -11,6 +11,7 @@
   "license": "MIT-0, SEE LICENSE IN LICENSE FILE",
   "dependencies": {
     "@aws-sdk/client-transcribe-streaming": "^3.131.0",
+    "@aws-sdk/client-translate": "^3.328.0",
     "chokidar": "^3.5.3",
     "m3u8": "^0.0.10",
     "utf8": "^3.0.0"

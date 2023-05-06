@@ -26,7 +26,7 @@
 const chokidar = require('chokidar');
 const { TranscribeStreamingClient, StartStreamTranscriptionCommand } = require('@aws-sdk/client-transcribe-streaming');
 /// TRANSLATE
-const { TranslateClient, CreateParallelDataCommand } = require("@aws-sdk/client-translate");
+const { TranslateClient, CreateParallelDataCommand } = require('@aws-sdk/client-translate');
 
 const stream = require('stream');
 const fs = require('fs');
