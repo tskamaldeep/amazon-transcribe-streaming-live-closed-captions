@@ -198,6 +198,7 @@ Resources:
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore'
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonTranscribeFullAccess'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/TranslateFullAccess'
   # add permissions for EC2
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
