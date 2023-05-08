@@ -26,7 +26,7 @@
 const chokidar = require('chokidar');
 const { TranscribeStreamingClient, StartStreamTranscriptionCommand } = require('@aws-sdk/client-transcribe-streaming');
 /// TRANSLATE
-const { TranslateClient, CreateParallelDataCommand } = require('@aws-sdk/client-translate');
+const { TranslateClient, TranslateTextCommand, CreateParallelDataCommand } = require('@aws-sdk/client-translate');
 
 const stream = require('stream');
 const fs = require('fs');
@@ -264,9 +264,9 @@ const generateTranslateFifo = async function generateTranslateFifo(transcript) {
     TargetLanguageCode: 'fr',
     Text: transcript.Transcript.Line1
   };
-  var trCmd = new CreateParallelDataCommand(trParams);
-  var trResponse = await trClient.send(trCmd);
-  var trText = trResponse; //.TranslatedText;
+  const trCmd = new TranslateTextCommand(trParams);
+  const trResponse = await trClient.send(trCmd);
+  const trText = trResponse; //.TranslatedText;
 
 
   trOutput += `${trText}\n`;
