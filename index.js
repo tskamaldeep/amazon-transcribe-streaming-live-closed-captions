@@ -205,10 +205,11 @@ if (isFifo) {
   fifoWs = fs.openSync(fifoFileName, 'w');
   console.log(`opening write stream to ${fifoFileName}`);
 }
-if (isFifoTr) {
-  fifoWsTr = fs.openSync(fifoTrFileName, 'w');
-  console.log(`opening write stream to ${fifoTrFileName}`);
-}
+/// Issue with second FIFO. Commenting out.
+// if (isFifoTr) {
+//   fifoWsTr = fs.openSync(fifoTrFileName, 'w');
+//   console.log(`opening write stream to ${fifoTrFileName}`);
+// }
 
 const generateSRTFifo = (transcript) => {
   // console.log('generating srt');
@@ -262,53 +263,61 @@ const generateTranslateFifo = async function generateTranslateFifo(transcript) {
   // Try translating the individual lines.
   /// Line 1
   const trClient = new TranslateClient({ region: REGION });
-  var trParams = {
-    SourceLanguageCode: 'auto',
-    TargetLanguageCode: 'fr',
-    Text: transcript.Transcript.Line1
-  };
-  var trCmd = new TranslateTextCommand(trParams);
-  var trResponse = await trClient.send(trCmd);
-  var trText = trResponse.TranslatedText;
+  if (transcript.Transcript.Line1.length > 0) {
+    var trParams = {
+      SourceLanguageCode: 'auto',
+      TargetLanguageCode: 'fr',
+      Text: transcript.Transcript.Line1
+    };
+    var trCmd = new TranslateTextCommand(trParams);
+    var trResponse = await trClient.send(trCmd);
+    var trText = trResponse.TranslatedText;
 
 
-  trOutput += `${trText}\n`;
-
+    trOutput += `${trText}\n`;
+  }
+  
   /// Line 2
-  trParams = {
-    SourceLanguageCode: 'auto',
-    TargetLanguageCode: 'fr',
-    Text: transcript.Transcript.Line2
-  };
-  trCmd = new TranslateTextCommand(trParams);
-  trResponse = await trClient.send(trCmd);
-  trText = trResponse.TranslatedText;
+  if (transcript.Transcript.Line2.length > 0) {
+    trParams = {
+      SourceLanguageCode: 'auto',
+      TargetLanguageCode: 'fr',
+      Text: transcript.Transcript.Line2
+    };
+    trCmd = new TranslateTextCommand(trParams);
+    trResponse = await trClient.send(trCmd);
+    trText = trResponse.TranslatedText;
 
-  trOutput += `${trText}\n`;
+    trOutput += `${trText}\n`;
+  }
 
   /// Line 3
-  trParams = {
-    SourceLanguageCode: 'auto',
-    TargetLanguageCode: 'fr',
-    Text: transcript.Transcript.Line3
-  };
-  trCmd = new TranslateTextCommand(trParams);
-  trResponse = await trClient.send(trCmd);
-  trText = trResponse.TranslatedText;
+  if (transcript.Transcript.Line3.length > 0) {
+    trParams = {
+      SourceLanguageCode: 'auto',
+      TargetLanguageCode: 'fr',
+      Text: transcript.Transcript.Line3
+    };
+    trCmd = new TranslateTextCommand(trParams);
+    trResponse = await trClient.send(trCmd);
+    trText = trResponse.TranslatedText;
 
-  trOutput += `${trText}\n`;
+    trOutput += `${trText}\n`;
+  }
 
   /// Line 4
-  trParams = {
-    SourceLanguageCode: 'auto',
-    TargetLanguageCode: 'fr',
-    Text: transcript.Transcript.Line4
-  };
-  trCmd = new TranslateTextCommand(trParams);
-  trResponse = await trClient.send(trCmd);
-  trText = trResponse.TranslatedText;
+  if (transcript.Transcript.Line4.length > 0) {
+    trParams = {
+      SourceLanguageCode: 'auto',
+      TargetLanguageCode: 'fr',
+      Text: transcript.Transcript.Line4
+    };
+    trCmd = new TranslateTextCommand(trParams);
+    trResponse = await trClient.send(trCmd);
+    trText = trResponse.TranslatedText;
 
-  trOutput += `${trText}\n`;
+    trOutput += `${trText}\n`;
+  }
 
   console.log(trOutput);
   /// Write to the default transcribe pipe.
